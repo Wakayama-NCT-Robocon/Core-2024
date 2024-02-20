@@ -1,8 +1,10 @@
 /* 2020/11/04 2018b24 竹中翔子
+/* 2024/01/13 2021a21 髙田陸生
    モータ、サーボ、ソレノイドのテスト用プログラム
    ArduinoDue用
    2022/9/23 2021a21 髙田陸生　　LtoH関数の不具合を修正
 
+   Esp32用
 
    データナンバー　 アクチュエータ   　操作
    send_data[1]　 モータ　　　   Rスティック
@@ -15,8 +17,6 @@
 #include <PS4Controller.h>
 #include <stdio.h>
 #include<math.h>//数学関数
-#include <string.h>
-using namespace std;
 
 //シリアル送受信用定義
 #define DATA_SEND_NUMBER 17//送信データ数
@@ -134,16 +134,16 @@ void loop() {
     CROSS = PS4.Cross();
     RIGHT = PS4.Right();
     LEFT = PS4.Left();
-    if (-8 < LStickX && LStickX < 8) {
+    if (-20 < LStickX && LStickX < 20) {
       LStickX = 0;
     }
-    if (-8 < LStickY && LStickY < 8) {
+    if (-20 < LStickY && LStickY < 20) {
       LStickY = 0;
     }
-    if (-8 < RStickX && RStickX < 8) {
+    if (-20 < RStickX && RStickX < 20) {
       RStickX = 0;
     }
-    if (-8 < RStickY && RStickY < 8) {
+    if (-20 < RStickY && RStickY < 20) {
       RStickY = 0;
     }
     /*****主にいじる所ここから*****/
@@ -191,25 +191,28 @@ void loop() {
     if (RIGHT)Fire += 0.1;
     if (LEFT)Fire -= 0.1;
     if (CROSS) {
-      //send_data[8] |= 0b00001000;
       pwm[3] = 74 * Fire;
       pwm[4] = -74 * Fire;//-73 good
     } else {
-      //send_data[8] &= 0b11110111;
       pwm[3] = 0;
       pwm[4] = 0;
+    //装填
+    if (PS4.L1()) {
+      send_data[9] |= 0b00000011;
     }
+    else {
+      send_data[9] &= 0b00001100;
+    }
+
     //シリアルモニタに表示
-    //      Serial.print("angle    ");
-    //      Serial.println(angle);
 
     /*****主にいじる所ここまで*****/
-    for (i = 1; i <= 4; i++) {//各pwmの比を保ちつつ最大値を超えないように修正してsend_data[1~7]に格納,第2引数の値はモータの数と同じ
+    for (i = 1; i < 5; i++) {//各pwmの比を保ちつつ最大値を超えないように修正してsend_data[1~2]に格納
       double pwm_abs = 0.;//絶対値
       if (pwm[i] > 0)pwm_abs = pwm[i];//pwm[i]の絶対値をpwm_absに代入．
       else pwm_abs = -pwm[i];
       //絶対値が最大値より大きければすべてのpwmに(絶対値/最大値)をかける．
-      if (PWM_MAX < pwm_abs)for (j = 1; j < 9; j++)pwm[j] *= (PWM_MAX / pwm_abs);
+      if (PWM_MAX < pwm_abs)for (j = 1; j < 5; j++)pwm[j] *= (PWM_MAX / pwm_abs);
       send_data[i] = (int)(pwm[i] + 128);//送信データに代入．
     }
     send_data[0] = '<';
