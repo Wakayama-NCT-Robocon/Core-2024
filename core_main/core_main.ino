@@ -24,8 +24,8 @@
 
 //シリアル送受信用グローバル変数
 int send_data[DATA_SEND_NUMBER] = {0}; //MDなどへの送信データ数
-//切り替え変数
-int SWM = 0;
+//フラグ変数
+bool SWM = 0, halfflag = 0;
 typedef union {
   int8_t signed_data;
   uint8_t unsigned_data;
@@ -149,21 +149,32 @@ void loop() {
     /*****主にいじる所ここから*****/
     //モーター
 
-    lY = LStickY * 0.13;
-    lX = LStickX * 0.13;
-    rX = RStickX * 0.13;
+    lY = LStickY * 0.13 * 0.8;
+    lX = LStickX * 0.13 * 0.8;
+    rX = RStickX * 0.13 * 0.8;
     send_data[5] = 30 + (-lY - lX + rX);
     send_data[6] = 30 + (lY - lX + rX);
     send_data[7] = 30 + (lY + lX + rX);
     send_data[8] = 30 + (-lY + lX + rX);
 
+    if (CROSS && halfflag == 0) {
+      lY *= 0.5;
+      lX *= 0.5;
+      rX *= 0.5;
+      halfflag == 1;
+    } else if (halfflag == 1) {
+      lY *= 1.5;
+      lX *= 1.5;
+      rX *= 1.5;
+      halfflag = 0;
+    }
     /*if ( && SWM == 0) {
         lY*=-1;
         lX*=-1;
         rX*=-1;
         SWM = 1;
       }
-    else if ( && SWM == 1) {
+      else if ( && SWM == 1) {
         lY*=-1;
         lX*=-1;
         rX*=-1;
@@ -190,7 +201,11 @@ void loop() {
     //射出
     if (RIGHT)Fire += 0.1;
     if (LEFT)Fire -= 0.1;
+<<<<<<< HEAD
+    if (CROSS) {//射出中足回り速度をx0.5する。サーボの向きに合わせて進行方向を反転する。出来れば射出を切り替え方式にする。
+=======
     if (CROSS) {
+>>>>>>> 44ffda7c4beedd6e1abbac169a7e094dc5e75608
       pwm[3] = 74 * Fire;
       pwm[4] = -74 * Fire;//-73 good
     } else {
@@ -200,10 +215,15 @@ void loop() {
     if (PS4.L1()) {
       send_data[9] |= 0b00000011;
     }
+<<<<<<< HEAD
+    if (R2 > 0)send_data[10] |= 0b00001000;
+    else send_data[10] &= 0b11110111;
+=======
     else {
       send_data[9] &= 0b00001100;
     }
 
+>>>>>>> 44ffda7c4beedd6e1abbac169a7e094dc5e75608
     //シリアルモニタに表示
 
     /*****主にいじる所ここまで*****/
@@ -212,7 +232,11 @@ void loop() {
       if (pwm[i] > 0)pwm_abs = pwm[i];//pwm[i]の絶対値をpwm_absに代入．
       else pwm_abs = -pwm[i];
       //絶対値が最大値より大きければすべてのpwmに(絶対値/最大値)をかける．
+<<<<<<< HEAD
+      if (PWM_MAX < pwm_abs)for (j = 1; j <= 4; j++)pwm[j] *= (PWM_MAX / pwm_abs);
+=======
       if (PWM_MAX < pwm_abs)for (j = 1; j < 5; j++)pwm[j] *= (PWM_MAX / pwm_abs);
+>>>>>>> 44ffda7c4beedd6e1abbac169a7e094dc5e75608
       send_data[i] = (int)(pwm[i] + 128);//送信データに代入．
     }
     send_data[0] = '<';
