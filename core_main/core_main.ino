@@ -201,29 +201,17 @@ void loop() {
     //射出
     if (RIGHT)Fire += 0.1;
     if (LEFT)Fire -= 0.1;
-<<<<<<< HEAD
-    if (CROSS) {//射出中足回り速度をx0.5する。サーボの向きに合わせて進行方向を反転する。出来れば射出を切り替え方式にする。
-=======
+//task:サーボの向きに合わせて進行方向を反転する。出来れば射出を切り替え方式にする。
     if (CROSS) {
->>>>>>> 44ffda7c4beedd6e1abbac169a7e094dc5e75608
       pwm[3] = 74 * Fire;
       pwm[4] = -74 * Fire;//-73 good
     } else {
       pwm[3] = 0;
       pwm[4] = 0;
     //装填
-    if (PS4.L1()) {
-      send_data[9] |= 0b00000011;
-    }
-<<<<<<< HEAD
-    if (R2 > 0)send_data[10] |= 0b00001000;
+    if (R2 > 0)send_data[10] |= 0b00001100;
     else send_data[10] &= 0b11110111;
-=======
-    else {
-      send_data[9] &= 0b00001100;
-    }
-
->>>>>>> 44ffda7c4beedd6e1abbac169a7e094dc5e75608
+    
     //シリアルモニタに表示
 
     /*****主にいじる所ここまで*****/
@@ -232,11 +220,7 @@ void loop() {
       if (pwm[i] > 0)pwm_abs = pwm[i];//pwm[i]の絶対値をpwm_absに代入．
       else pwm_abs = -pwm[i];
       //絶対値が最大値より大きければすべてのpwmに(絶対値/最大値)をかける．
-<<<<<<< HEAD
       if (PWM_MAX < pwm_abs)for (j = 1; j <= 4; j++)pwm[j] *= (PWM_MAX / pwm_abs);
-=======
-      if (PWM_MAX < pwm_abs)for (j = 1; j < 5; j++)pwm[j] *= (PWM_MAX / pwm_abs);
->>>>>>> 44ffda7c4beedd6e1abbac169a7e094dc5e75608
       send_data[i] = (int)(pwm[i] + 128);//送信データに代入．
     }
     send_data[0] = '<';
