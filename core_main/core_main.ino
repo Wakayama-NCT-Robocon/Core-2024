@@ -147,14 +147,25 @@ void loop() {
     /*****主にいじる所ここから*****/
     //モーター
 
-    lY = LStickY * 0.13;
-    lX = LStickX * 0.13;
-    rX = RStickX * 0.13;
+    lY = LStickY * 0.13 * 0.8;
+    lX = LStickX * 0.13 * 0.8;
+    rX = RStickX * 0.13 * 0.8;
     send_data[5] = 30 + (-lY - lX + rX);
     send_data[6] = 30 + (lY - lX + rX);
     send_data[7] = 30 + (lY + lX + rX);
     send_data[8] = 30 + (-lY + lX + rX);
 
+    if (CROSS && halfflag == 0) {
+      lY *= 0.5;
+      lX *= 0.5;
+      rX *= 0.5;
+      halfflag == 1;
+    } else if (halfflag == 1) {
+      lY *= 1.5;
+      lX *= 1.5;
+      rX *= 1.5;
+      halfflag = 0;
+    }
     /*if ( && SWM == 0) {
         lY*=-1;
         lX*=-1;
@@ -195,26 +206,21 @@ void loop() {
     } else {
       pwm[3] = 0;
       pwm[4] = 0;
-      //装填
-      if (R2 > 0)send_data[10] |= 0b00001100;
-      else send_data[10] &= 0b11110111;
+    }
+    //装填
+    if (R2 > 0)send_data[10] |= 0b00001100;
+    else send_data[10] &= 0b11110111;
+    
+    //シリアルモニタに表示
 
-      //シリアルモニタに表示
-
-      /*****主にいじる所ここまで*****/
-      for (i = 1; i < 5; i++) {//各pwmの比を保ちつつ最大値を超えないように修正してsend_data[1~2]に格納
-        double pwm_abs = 0.;//絶対値
-        if (pwm[i] > 0)pwm_abs = pwm[i];//pwm[i]の絶対値をpwm_absに代入．
-        else pwm_abs = -pwm[i];
-        //絶対値が最大値より大きければすべてのpwmに(絶対値/最大値)をかける．
-        if (PWM_MAX < pwm_abs)for (j = 1; j <= 4; j++)pwm[j] *= (PWM_MAX / pwm_abs);
-        send_data[i] = (int)(pwm[i] + 128);//送信データに代入．
-      }
-      send_data[0] = '<';
-      send_data[DATA_SEND_NUMBER - 1] = '>';
-      //send_data[0 : (DATA_SEND_NUMBER-1)]をTX2から送信
-      for (i = 0; i < DATA_SEND_NUMBER; i++)Serial2.write(send_data[i]);
-      Serial2.write(0b10100000 + DATA_SEND_NUMBER);//送信データ数を送信
+    /*****主にいじる所ここまで*****/
+    for (i = 1; i < 5; i++) {//各pwmの比を保ちつつ最大値を超えないように修正してsend_data[1~2]に格納
+      double pwm_abs = 0.;//絶対値
+      if (pwm[i] > 0)pwm_abs = pwm[i];//pwm[i]の絶対値をpwm_absに代入．
+      else pwm_abs = -pwm[i];
+      //絶対値が最大値より大きければすべてのpwmに(絶対値/最大値)をかける．
+      if (PWM_MAX < pwm_abs)for (j = 1; j <= 4; j++)pwm[j] *= (PWM_MAX / pwm_abs);
+      send_data[i] = (int)(pwm[i] + 128);//送信データに代入．
     }
   }
 }
