@@ -1,7 +1,5 @@
 /* 2020/11/04 2018b24 竹中翔子
-/* 2024/01/13 2021a21 髙田陸生
-   モータ、サーボ、ソレノイドのテスト用プログラム
-   ArduinoDue用
+   2024/01/13 2021a21 髙田陸生
    2022/9/23 2021a21 髙田陸生　　LtoH関数の不具合を修正
 
    Esp32用
@@ -16,7 +14,7 @@
 */
 #include <PS4Controller.h>
 #include <stdio.h>
-#include<math.h>//数学関数
+#include <math.h>//数学関数
 
 //シリアル送受信用定義
 #define DATA_SEND_NUMBER 17//送信データ数
@@ -24,8 +22,13 @@
 
 //シリアル送受信用グローバル変数
 int send_data[DATA_SEND_NUMBER] = {0}; //MDなどへの送信データ数
+<<<<<<< Updated upstream
 //切り替え変数
 int SWM = 0;
+=======
+//フラグ変数
+bool SWM = 0, halfflag = 0,FireFlag=0;
+>>>>>>> Stashed changes
 typedef union {
   int8_t signed_data;
   uint8_t unsigned_data;
@@ -190,12 +193,17 @@ void loop() {
     //射出
     if (RIGHT)Fire += 0.1;
     if (LEFT)Fire -= 0.1;
+<<<<<<< Updated upstream
+=======
+    //task:サーボの向きに合わせて進行方向を反転する。出来れば射出を切り替え方式にする。
+>>>>>>> Stashed changes
     if (CROSS) {
       pwm[3] = 74 * Fire;
       pwm[4] = -74 * Fire;//-73 good
     } else {
       pwm[3] = 0;
       pwm[4] = 0;
+<<<<<<< Updated upstream
     //装填
     if (PS4.L1()) {
       send_data[9] |= 0b00000011;
@@ -214,11 +222,27 @@ void loop() {
       //絶対値が最大値より大きければすべてのpwmに(絶対値/最大値)をかける．
       if (PWM_MAX < pwm_abs)for (j = 1; j < 5; j++)pwm[j] *= (PWM_MAX / pwm_abs);
       send_data[i] = (int)(pwm[i] + 128);//送信データに代入．
+=======
+      //装填
+      if (R2 > 0)send_data[10] |= 0b00001100;
+      else send_data[10] &= 0b11110111;
+
+      //シリアルモニタに表示
+
+      /*****主にいじる所ここまで*****/
+      for (i = 1; i < 5; i++) {//各pwmの比を保ちつつ最大値を超えないように修正してsend_data[1~2]に格納
+        double pwm_abs = 0.;//絶対値
+        if (pwm[i] > 0)pwm_abs = pwm[i];//pwm[i]の絶対値をpwm_absに代入．
+        else pwm_abs = -pwm[i];
+        //絶対値が最大値より大きければすべてのpwmに(絶対値/最大値)をかける．
+        if (PWM_MAX < pwm_abs)for (j = 1; j <= 4; j++)pwm[j] *= (PWM_MAX / pwm_abs);
+        send_data[i] = (int)(pwm[i] + 128);//送信データに代入．
+      }
+      send_data[0] = '<';
+      send_data[DATA_SEND_NUMBER - 1] = '>';
+      //send_data[0 : (DATA_SEND_NUMBER-1)]をTX2から送信
+      for (i = 0; i < DATA_SEND_NUMBER; i++)Serial2.write(send_data[i]);
+      Serial2.write(0b10100000 + DATA_SEND_NUMBER);//送信データ数を送信
+>>>>>>> Stashed changes
     }
-    send_data[0] = '<';
-    send_data[DATA_SEND_NUMBER - 1] = '>';
-    //send_data[0 : (DATA_SEND_NUMBER-1)]をTX2から送信
-    for (i = 0; i < DATA_SEND_NUMBER; i++)Serial2.write(send_data[i]);
-    Serial2.write(0b10100000 + DATA_SEND_NUMBER);//送信データ数を送信
   }
-}
