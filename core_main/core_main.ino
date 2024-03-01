@@ -15,6 +15,7 @@
 #include <PS4Controller.h>
 #include <stdio.h>
 #include <math.h>//数学関数
+#include <ESP32Servo.h>
 
 //シリアル送受信用定義
 #define DATA_SEND_NUMBER 17//送信データ数
@@ -23,7 +24,12 @@
 //シリアル送受信用グローバル変数
 int send_data[DATA_SEND_NUMBER] = {0}; //MDなどへの送信データ数
 //フラグ変数
-bool SWM = 0, halfflag = 0, FireFlag = 0;
+
+//オブジェクト
+Servo Camera;
+
+//PIN設定
+const int PIN_SV = 5;//サーボの信号線
 
 typedef union {
   int8_t signed_data;
@@ -173,30 +179,6 @@ void loop() {
     send_data[7] = 30 + (lY + lX + rX);
     send_data[8] = 30 + (-lY + lX + rX);
 
-    if (CROSS && halfflag == 0) {
-      lY *= 0.5;
-      lX *= 0.5;
-      rX *= 0.5;
-      halfflag == 1;
-    } else if (halfflag == 1) {
-      lY *= 1.5;
-      lX *= 1.5;
-      rX *= 1.5;
-      halfflag = 0;
-    }
-    /*if ( && SWM == 0) {
-        lY*=-1;
-        lX*=-1;
-        rX*=-1;
-        SWM = 1;
-      }
-      else if ( && SWM == 1) {
-        lY*=-1;
-        lX*=-1;
-        rX*=-1;
-        SWM = 0;
-      }*/
-
     //アームの移動
     if (L1)pwm[1] = 100; //上
     else if (L2 > 0)pwm[1] = -100; //下
@@ -217,7 +199,6 @@ void loop() {
     //射出
     if (RIGHT)Fire += 0.1;
     if (LEFT)Fire -= 0.1;
-    
     //task:サーボの向きに合わせて進行方向を反転する。出来れば射出を切り替え方式にする。
     if (CROSS) {
       pwm[3] = 74 * Fire;
@@ -228,10 +209,10 @@ void loop() {
     }
     //装填
     if (R2 > 0)send_data[10] |= 0b00001100;
-    else send_data[10] &= 0b11110111;
+    else send_data[10] &= 0b11110011;
     
     //シリアルモニタに表示
-
+    
     /*****主にいじる所ここまで*****/
     for (i = 1; i <= 4; i++) {//各pwmの比を保ちつつ最大値を超えないように修正してsend_data[1~4]に格納
       double pwm_abs = 0.;//絶対値
