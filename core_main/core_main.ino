@@ -202,6 +202,7 @@ void loop() {
     if (RIGHT)Fire += 0.1;
     if (LEFT)Fire -= 0.1;
 //task:サーボの向きに合わせて進行方向を反転する。出来れば射出を切り替え方式にする。
+    //task:サーボの向きに合わせて進行方向を反転する。出来れば射出を切り替え方式にする。
     if (CROSS) {
       pwm[3] = 74 * Fire;
       pwm[4] = -74 * Fire;//-73 good
