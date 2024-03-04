@@ -2,13 +2,11 @@
 
 ## 説明
 
-- core_main
+- core_main:主なメインプログラム
   
-
 - core_wireless_module_send
   
-
-- robomaster_pid
+- robomaster_pid:ロボマスMDのPID制御テスト
   
-- documents
+- documents:各資料
   
