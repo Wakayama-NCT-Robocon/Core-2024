@@ -24,6 +24,7 @@
 //シリアル送受信用グローバル変数
 int send_data[DATA_SEND_NUMBER] = {0}; //MDなどへの送信データ数
 //フラグ変数
+int armR1[5] = {0} , armSf = 0,armSstat=0b00000000;
 //オブジェクト
 Servo Camera;
 
@@ -188,18 +189,45 @@ void loop() {
     else pwm[2] = 0;
 
     //アームのつかみ
-    if (SQUARE)send_data[9] |= 0b00000001;
-    else send_data[9] &= 0b11111110;
-    if (CIRCLE)send_data[9] |= 0b00001000;
-    else send_data[9] &= 0b11110111;
-    if (TRIANGLE)send_data[9] |= 0b00000010;
-    else send_data[9] &= 0b11111101;
-    if (R1)send_data[9] |= 0b00000100;//横
+    if (CIRCLE) { //全つかみ
+      send_data[9] |= 0b00001011;
+    }
+    if(SQUARE!=armSf&&SQUARE){//□を押すと○△□の順でシリンダ信号を切る
+      if(armSstat==0b00001011||armSstat==0b00001111){
+        send_data[9]&=0b11110111;
+        armSstat=send_data[9];
+      }else if(armSstat==0b00000011||armSstat==0b00000111){
+        send_data[9]&=0b11111101;
+        armSstat=send_data[9];
+      }else if(armSstat==0b00000001||armSstat==0b00000101){
+        send_data[9]&=0b11111110;
+        armSstat=send_data[9];
+      }
+    }
+    armSf=SQUARE;
+
+    if (R1) {
+      armR1[0] = 1;
+    } else {
+      armR1[0] = 0;
+      armR1[1] = 0;
+    }
+    if (armR1[0] == 1 && armR1[1] == 0) {
+      if (armR1[4] == 0) {
+        armR1[3]++;
+        armR1[4]++;
+      } else if (armR1[4] == 1) {
+        armR1[3]--;
+        armR1[4]--;
+      }
+      armR1[1] = 1;
+    }
+    if (armR1[3] == 1)send_data[9] |= 0b00000100; //横
     else send_data[9] &= 0b11111011;
     //射出
     if (RIGHT)Fire += 0.1;
     if (LEFT)Fire -= 0.1;
-    //task:サーボの向きに合わせて進行方向を反転する。出来れば射出を切り替え方式にする。
+    //task:サーボの向きに合わせて進行方向を反転する。R1シリンダを切り替え方式にする。
     if (CROSS) {
       pwm[3] = 74 * Fire;
       pwm[4] = -74 * Fire;//-73 good
@@ -212,7 +240,7 @@ void loop() {
     else send_data[10] &= 0b11110011;
 
     //シリアルモニタに表示
-    
+
     /*****主にいじる所ここまで*****/
     for (i = 1; i <= 4; i++) {//各pwmの比を保ちつつ最大値を超えないように修正してsend_data[1~4]に格納
       double pwm_abs = 0.;//絶対値
