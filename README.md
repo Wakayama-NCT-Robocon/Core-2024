@@ -1,3 +1,14 @@
-# 今後このリポジトリの更新は以下のリンクで行われます
+# このリポジトリはCOREのメインプログラムを取り扱っています
 
-https://github.com/Wakayama-NCT-Robocon/Core-2024/
+## 説明
+
+- core_main
+  
+
+- core_wireless_module_send
+  
+
+- robomaster_pid
+  
+- documents
+  
